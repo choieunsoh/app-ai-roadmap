@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive 90-Day AI Study Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: The application is structured as an interactive dashboard, now expanded to a 13-week grid layout for a broad, 90-day overview. Each day's topic is represented by a clickable card that reveals detailed information in a modal, minimizing initial information overload. Progress tracking, including checkboxes for daily completion and a global progress bar, aims to enhance user motivation. A dynamic donut chart visually summarizes the distribution of study areas. Navigation is made intuitive through a sticky header with direct links to each week, facilitating quick access across the comprehensive learning journey. This design emphasizes user engagement, clear progress visualization, and efficient information access for an extended study plan. -->
+    <!-- Visualization & Content Choices:
+        - Roadmap Overview: Report Info -> 90-day chronological plan. Goal -> Organize/Inform. Viz/Presentation -> Interactive Grid of Cards (HTML/Tailwind). Interaction -> Click to open detail modal, checkbox for completion. Justification -> Provides a digestible and navigable overview of the extended timeline.
+        - Daily Details: Report Info -> Detailed topic description and resources. Goal -> Inform. Viz/Presentation -> Modal Dialog (HTML/Tailwind/JS). Interaction -> Display on click, dismissible. Justification -> Keeps the main interface clean by presenting detailed information on demand.
+        - Progress Tracking: Report Info -> Completion status of daily tasks. Goal -> Engage/Motivate. Viz/Presentation -> Checkboxes & Progress Bar (HTML/Tailwind/JS). Interaction -> Click to update completion status, real-time progress bar update. Justification -> Enhances user motivation and provides immediate visual feedback on learning progress.
+        - Topic Distribution: Report Info -> Categorization and duration of topics across the 90 days. Goal -> Analyze/Inform. Viz/Presentation -> Donut Chart (Chart.js/Canvas). Interaction -> Hover for detailed topic breakdown and days spent. Justification -> Offers a clear, at-a-glance summary of curriculum allocation across foundational and advanced AI domains, accommodating the longer duration.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f5f4; /* stone-100 */
+      }
+      .day-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      }
+      .day-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      }
+      .day-card.completed {
+        background-color: #f0fdfa; /* teal-50 */
+        border-color: #14b8a6; /* teal-500 */
+      }
+      .day-card.completed .day-title {
+        text-decoration: line-through;
+        color: #52525b; /* zinc-600 */
+      }
+      .modal {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 450px; /* Slightly increased max-width for better chart visibility */
+        margin-left: auto;
+        margin-right: auto;
+        height: 400px; /* Slightly increased height */
+        max-height: 450px;
+      }
+      @media (min-width: 768px) {
+        .chart-container {
+          height: 400px; /* Maintain height on larger screens */
+        }
+      }
+    </style>
+  </head>
+  <body class="text-stone-800">
+    <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <header class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2">Your 90-Day AI Learning Journey</h1>
+        <p class="text-lg text-stone-600">
+          A comprehensive interactive roadmap to master AI, LLMs, and Agentic AI, starting with core fundamentals.
+        </p>
+      </header>
+
+      <div class="sticky top-0 z-10 bg-stone-100/80 backdrop-blur-sm py-4 mb-8">
+        <div class="max-w-5xl mx-auto">
+          <div class="mb-4">
+            <div class="flex justify-between mb-1">
+              <span class="text-base font-medium text-teal-700">Progress</span>
+              <span id="progress-text" class="text-sm font-medium text-teal-700">0%</span>
+            </div>
+            <div class="w-full bg-stone-200 rounded-full h-2.5">
+              <div
+                id="progress-bar"
+                class="bg-teal-500 h-2.5 rounded-full"
+                style="width: 0%; transition: width 0.5s ease-in-out"
+              ></div>
+            </div>
+          </div>
+          <nav class="flex justify-center flex-wrap gap-2 sm:space-x-2 bg-white p-2 rounded-full shadow-sm text-sm">
+            <a
+              href="#week-1"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 1</a
+            >
+            <a
+              href="#week-2"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 2</a
+            >
+            <a
+              href="#week-3"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 3</a
+            >
+            <a
+              href="#week-4"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 4</a
+            >
+            <a
+              href="#week-5"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 5</a
+            >
+            <a
+              href="#week-6"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 6</a
+            >
+            <a
+              href="#week-7"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 7</a
+            >
+            <a
+              href="#week-8"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 8</a
+            >
+            <a
+              href="#week-9"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 9</a
+            >
+            <a
+              href="#week-10"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 10</a
+            >
+            <a
+              href="#week-11"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 11</a
+            >
+            <a
+              href="#week-12"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 12</a
+            >
+            <a
+              href="#week-13"
+              class="nav-link px-2 sm:px-3 py-2 font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Wk 13</a
+            >
+          </nav>
+        </div>
+      </div>
+
+      <main id="roadmap-grid" class="space-y-12"></main>
+
+      <section class="mt-16 pt-8 border-t border-stone-200">
+        <h2 class="text-3xl font-bold text-center text-teal-800 mb-4">Roadmap Overview</h2>
+        <p class="text-center text-stone-600 max-w-2xl mx-auto mb-8">
+          This chart provides a visual breakdown of your 90-day learning plan, showing how many days are dedicated to
+          each core area of AI. Use it to understand the focus of the curriculum and how foundational concepts build
+          towards more advanced topics.
+        </p>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <div class="chart-container">
+            <canvas id="overviewChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      id="detail-modal"
+      class="modal hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+    >
+      <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 id="modal-title" class="text-2xl font-bold text-teal-800">1</h3>
+              <p id="modal-category" class="text-sm font-medium text-teal-600"></p>
+            </div>
+            <button id="close-modal-btn" class="text-stone-500 hover:text-stone-800 transition-colors">
+              <span class="text-2xl font-bold">&times;</span>
+            </button>
+          </div>
+          <div id="modal-body" class="prose max-w-none text-stone-700">
+            <p id="modal-description"></p>
+            <h4 class="font-semibold mt-6 mb-3 text-stone-800">Where to Learn:</h4>
+            <ul id="modal-resources" class="list-none p-0"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const roadmapData = [
+        {
+          week: 1,
+          day: '1-3',
+          category: 'Python',
+          title: 'Python Basics & Control Flow',
+          description:
+            "Begin your journey by mastering Python fundamentals: syntax, variables, data types, and basic operators. Learn about conditional statements (if/else) and loops (for/while) which are essential for writing any program. Understand how to write clean, readable code and how to debug simple errors. This foundational knowledge in Python is crucial as it's the primary language for almost all modern AI development, from scripting to complex machine learning frameworks.",
+          resources: [
+            {
+              type: 'Course',
+              text: 'Python for Everybody Specialization (University of Michigan) on Coursera (Course 1)',
+              link: 'https://www.coursera.org/specializations/python',
+            },
+            {
+              type: 'Resource',
+              text: 'Official Python Tutorial (docs.python.org)',
+              link: 'https://docs.python.org/3/tutorial/',
+            },
+          ],
+        },
+        {
+          week: 1,
+          day: '4-6',
+          category: 'Python',
+          title: 'Python Data Structures & Collections',
+          description:
+            "Deep dive into Python's built-in data structures: lists, tuples, sets, and dictionaries. Understand their characteristics, common operations, and when to use each. Learn about list comprehensions for concise code and dictionary methods for efficient data access. These structures are fundamental for organizing and manipulating data in any programming task, especially when dealing with data science and machine learning datasets.",
+          resources: [
+            {
+              type: 'Course',
+              text: 'Python for Everybody Specialization (University of Michigan) on Coursera (Course 2)',
+              link: 'https://www.coursera.org/specializations/python',
+            },
+            {
+              type: 'Reading',
+              text: 'Real Python: Python Data Structures',
+              link: 'https://realpython.com/python-data-structures/',
+            },
+          ],
+        },
+        {
+          week: 1,
+          day: '7',
+          category: 'Project',
+          title: 'Python Warm-up Project',
+          description:
+            'Apply your Python fundamentals by creating a small program. This could be a simple command-line calculator, a text-based adventure game, or a basic file organizer. Focus on using variables, control flow, functions, and perhaps simple data structures. This project aims to solidify your coding skills and build confidence in translating logic into Python code.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Build a Python project from a beginner-friendly list (e.g., Python Mini Projects on GitHub)',
+              link: 'https://github.com/avinashsaith/Python-Mini-Projects',
+            },
+          ],
+        },
+
+        {
+          week: 2,
+          day: '8-10',
+          category: 'Python',
+          title: 'Functions, Modules & File I/O',
+          description:
+            'Learn to organize your code using functions, understanding arguments, return values, and scope. Explore how to create and use modules to structure larger projects. Master file input/output operations (reading from and writing to files), which are essential for handling data. These concepts are crucial for developing robust and scalable Python applications.',
+          resources: [
+            {
+              type: 'Course',
+              text: 'Python for Everybody Specialization (University of Michigan) on Coursera (Course 3)',
+              link: 'https://www.coursera.org/specializations/python',
+            },
+            {
+              type: 'Resource',
+              text: 'Python documentation on Modules and I/O',
+              link: 'https://docs.python.org/3/tutorial/modules.html',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '11-13',
+          category: 'Python',
+          title: 'Object-Oriented Programming (OOP) in Python',
+          description:
+            'Grasp the basics of Object-Oriented Programming (OOP): classes, objects, attributes, and methods. Understand core OOP principles like encapsulation, inheritance, and polymorphism. OOP helps create modular, reusable, and maintainable codebases, which is vital for building larger AI applications and understanding frameworks like TensorFlow and PyTorch.',
+          resources: [
+            {
+              type: 'Course',
+              text: 'Python for Everybody Specialization (University of Michigan) on Coursera (Course 4)',
+              link: 'https://www.coursera.org/specializations/python',
+            },
+            {
+              type: 'Tutorial',
+              text: 'GeeksforGeeks: Python OOPs Concepts',
+              link: 'https://www.geeksforgeeks.org/python-oops-concepts/',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '14',
+          category: 'Project',
+          title: 'Intermediate Python Project',
+          description:
+            'Apply your intermediate Python skills by developing a more complex program. This could be a basic web scraper, a simple data processing script that reads from a file, or a program using custom classes and objects. Focus on writing modular, well-structured code that leverages functions and OOP principles.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Automate the Boring Stuff with Python (Chapter projects)',
+              link: 'https://automatetheboringstuff.com/2e/chapter12/',
+            },
+          ],
+        },
+
+        {
+          week: 3,
+          day: '15-17',
+          category: 'Data Analysis',
+          title: 'NumPy for Numerical Computing',
+          description:
+            "Explore NumPy, the fundamental library for numerical computing in Python. Learn about NumPy arrays, array operations (vectorization), broadcasting, and common array manipulation techniques. NumPy's efficiency in handling large datasets and performing mathematical operations is crucial for machine learning, as most data is processed as numerical arrays. It forms the basis for many other scientific computing libraries.",
+          resources: [
+            {
+              type: 'Course',
+              text: 'NumPy Official Tutorial',
+              link: 'https://numpy.org/doc/stable/user/quickstart.html',
+            },
+            {
+              type: 'Course',
+              text: 'DataCamp: Introduction to NumPy',
+              link: 'https://www.datacamp.com/courses/introduction-to-numpy',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '18-20',
+          category: 'Data Analysis',
+          title: 'Pandas for Data Manipulation',
+          description:
+            'Master Pandas, a powerful library for data manipulation and analysis. Learn about DataFrames and Series, reading/writing various file formats (CSV, Excel), data cleaning (handling missing values, duplicates), filtering, grouping, and merging datasets. Pandas is indispensable for preparing and preprocessing data for machine learning models, transforming raw information into a usable format.',
+          resources: [
+            {
+              type: 'Course',
+              text: 'Pandas Official Documentation: 10 Minutes to Pandas',
+              link: 'https://pandas.pydata.org/docs/user_guide/10min.html',
+            },
+            {
+              type: 'Course',
+              text: 'DataCamp: Data Manipulation with Pandas',
+              link: 'https://www.datacamp.com/courses/data-manipulation-with-pandas',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '21',
+          category: 'Project',
+          title: 'Data Preprocessing Project',
+          description:
+            'Work on a project focused on data preprocessing using Pandas and NumPy. Choose a messy dataset (e.g., one with missing values, inconsistent formats) and practice cleaning, transforming, and preparing it for analysis. This project will highlight the importance of data quality in any data science or machine learning pipeline.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Kaggle: Data Cleaning Mini-Projects',
+              link: 'https://www.kaggle.com/code/learn/data-cleaning',
+            },
+          ],
+        },
+
+        {
+          week: 4,
+          day: '22-24',
+          category: 'Data Analysis',
+          title: 'Data Visualization with Matplotlib & Seaborn',
+          description:
+            'Learn to visualize data effectively using Matplotlib and Seaborn. Understand how to create various plots like line plots, bar charts, scatter plots, and histograms. Explore customizing plot aesthetics, adding labels, and generating subplots. Effective data visualization is key for exploratory data analysis, understanding data distributions, and presenting insights from your machine learning models.',
+          resources: [
+            {
+              type: 'Course',
+              text: 'DataCamp: Introduction to Data Visualization with Matplotlib',
+              link: 'https://www.datacamp.com/courses/introduction-to-data-visualization-with-matplotlib',
+            },
+            { type: 'Tutorial', text: 'Seaborn Tutorial', link: 'https://seaborn.pydata.org/tutorial.html' },
+          ],
+        },
+        {
+          week: 4,
+          day: '25-27',
+          category: 'Mathematics',
+          title: 'Linear Algebra Fundamentals',
+          description:
+            'Grasp the core concepts of linear algebra essential for AI: vectors, matrices, dot products, matrix multiplication, and basic matrix operations. Understand how these mathematical tools are used to represent data (e.g., images as matrices, features as vectors) and perform transformations in machine learning algorithms, particularly in neural networks. This foundation is critical for understanding the mechanics of models.',
+          resources: [
+            {
+              type: 'Course',
+              text: '3Blue1Brown: Essence of Linear Algebra (YouTube Playlist)',
+              link: 'https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6bXl_D6pmzZNtY6FZoc2',
+            },
+            {
+              type: 'Book',
+              text: 'Linear Algebra and Its Applications by Gilbert Strang (Chapters 1-2)',
+              link: 'https://math.mit.edu/~gs/linearalgebra/',
+            },
+          ],
+        },
+        {
+          week: 4,
+          day: '28',
+          category: 'Project',
+          title: 'Exploratory Data Analysis Project',
+          description:
+            'Undertake a mini-project focused on exploratory data analysis (EDA). Choose a dataset (e.g., from Kaggle on COVID-19 cases, sales data, etc.) and apply your NumPy, Pandas, Matplotlib, and Seaborn skills to uncover patterns, relationships, and anomalies. Your goal is to generate insights and communicate them through compelling visualizations.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Kaggle: Data Analysis Projects for Beginners',
+              link: 'https://www.kaggle.com/datasets?search=beginner+data+analysis',
+            },
+          ],
+        },
+
+        {
+          week: 5,
+          day: '29-31',
+          category: 'Mathematics',
+          title: 'Calculus Essentials for ML',
+          description:
+            'Focus on the calculus concepts vital for machine learning: derivatives, partial derivatives, and the chain rule. Understand the concept of a gradient and its role in optimization algorithms. These mathematical tools enable models to learn by adjusting their parameters based on how sensitive the output is to changes in input, which is the core of training neural networks.',
+          resources: [
+            {
+              type: 'Course',
+              text: '3Blue1Brown: Essence of Calculus (YouTube Playlist)',
+              link: 'https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6bXl_D6pmzZNtY6FZoc2',
+            },
+            {
+              type: 'Resource',
+              text: 'Khan Academy: Differential Calculus (relevant sections)',
+              link: 'https://www.khanacademy.org/math/differential-calculus',
+            },
+          ],
+        },
+        {
+          week: 5,
+          day: '32-34',
+          category: 'Mathematics',
+          title: 'Optimization: Gradient Descent Variants',
+          description:
+            'Delve into optimization techniques, primarily Gradient Descent, which is the workhorse algorithm for training most machine learning models. Understand how it iteratively adjusts model parameters to minimize a cost function. Explore different variants like Batch, Stochastic, and Mini-Batch Gradient Descent. This concept is fundamental to how neural networks learn and improve their performance.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Andrew Ng's 'Machine Learning Specialization' on Coursera (Gradient Descent module)",
+              link: 'https://www.coursera.org/specializations/machine-learning-introduction',
+            },
+            {
+              type: 'Blog Post',
+              text: 'Towards Data Science: An overview of gradient descent optimization algorithms',
+              link: 'https://towardsdatascience.com/an-overview-of-gradient-descent-optimization-algorithms-a21221ac0751',
+            },
+          ],
+        },
+        {
+          week: 5,
+          day: '35',
+          category: 'Project',
+          title: 'Math & Optimization Practice',
+          description:
+            'Engage in practice problems related to linear algebra (vector/matrix operations) and calculus (derivatives). Implement a simple gradient descent algorithm from scratch in Python to minimize a basic quadratic function. This practical exercise will reinforce the mathematical concepts and show their direct application in model training.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Write Python code for basic matrix operations and a simple gradient descent implementation.',
+              link: 'https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/chap1.py',
+            },
+          ],
+        },
+
+        {
+          week: 6,
+          day: '36-38',
+          category: 'Statistics',
+          title: 'Probability Theory Basics & Distributions',
+          description:
+            "Understand the fundamentals of probability theory: sample spaces, events, conditional probability, independence, Bayes' Theorem, and common probability distributions (e.g., Bernoulli, Binomial, Normal, Poisson). Probability is crucial for understanding uncertainty in data, model predictions, and statistical inference in machine learning. It forms the backbone for many algorithms, particularly in fields like Bayesian learning.",
+          resources: [
+            {
+              type: 'Course',
+              text: 'Khan Academy: Probability and Statistics (Probability section)',
+              link: 'https://www.khanacademy.org/math/statistics-probability/probability-library',
+            },
+            {
+              type: 'Book',
+              text: 'Probability & Statistics for Engineers & Scientists by Walpole et al. (Chapters 1-3)',
+              link: 'https://www.amazon.com/Probability-Statistics-Engineers-Scientists-9th/dp/0321629119',
+            },
+          ],
+        },
+        {
+          week: 6,
+          day: '39-41',
+          category: 'Statistics',
+          title: 'Descriptive & Inferential Statistics',
+          description:
+            'Learn to summarize and describe data using descriptive statistics: mean, median, mode, variance, standard deviation, quartiles, and correlation. Then dive into inferential statistics, including concepts like confidence intervals and the basics of hypothesis testing (null and alternative hypotheses, p-values, t-tests). These statistical methods help validate model results, compare different models, and make data-driven decisions.',
+          resources: [
+            {
+              type: 'Course',
+              text: 'Khan Academy: Probability and Statistics (Descriptive & Inferential Statistics)',
+              link: 'https://www.khanacademy.org/math/statistics-probability',
+            },
+            {
+              type: 'Book',
+              text: 'Practical Statistics for Data Scientists by Bruce & Bruce (Chapters on Hypothesis Testing)',
+              link: 'https://www.oreilly.com/library/view/practical-statistics-for/9781491952955/',
+            },
+          ],
+        },
+        {
+          week: 6,
+          day: '42',
+          category: 'Project',
+          title: 'Statistical Analysis Project',
+          description:
+            'Apply statistical concepts to a real-world dataset. Conduct descriptive analysis, visualize distributions, and perform a basic hypothesis test (e.g., comparing means between two groups). Use Python libraries like SciPy and StatsModels. This project aims to bridge the gap between statistical theory and practical data analysis, enhancing your ability to interpret and communicate data insights.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Kaggle: Datasets for Statistical Analysis (e.g., A/B Testing datasets)',
+              link: 'https://www.kaggle.com/datasets?search=statistical+analysis',
+            },
+          ],
+        },
+
+        {
+          week: 7,
+          day: '43-45',
+          category: 'Foundations',
+          title: 'Introduction to AI & ML Paradigms',
+          description:
+            'Revisit and deepen your understanding of the core paradigms of AI and Machine Learning. Explore supervised learning (regression, classification), unsupervised learning (clustering, dimensionality reduction), and reinforcement learning. Understand their real-world applications and the types of problems each is best suited to solve. This forms the conceptual map for your entire AI journey.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Andrew Ng's 'Machine Learning Specialization' on Coursera (Course 1)",
+              link: 'https://www.coursera.org/specializations/machine-learning-introduction',
+            },
+            {
+              type: 'Reading',
+              text: 'Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow by Aurélien Géron (Chapter 1)',
+              link: 'https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/',
+            },
+          ],
+        },
+        {
+          week: 7,
+          day: '46-48',
+          category: 'Foundations',
+          title: 'Linear & Logistic Regression Deep Dive',
+          description:
+            'Go beyond the basics of linear and logistic regression. Understand assumptions, limitations, and regularization techniques (L1, L2) to prevent overfitting. Explore concepts like polynomial regression and multi-class logistic regression. These algorithms are not only fundamental but also serve as building blocks and baselines for more complex models, emphasizing interpretability.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Andrew Ng's 'Machine Learning Specialization' on Coursera (Regression & Classification modules)",
+              link: 'https://www.coursera.org/specializations/machine-learning-introduction',
+            },
+            {
+              type: 'Resource',
+              text: 'Scikit-learn documentation for LinearRegression and LogisticRegression',
+              link: 'https://scikit-learn.org/stable/modules/linear_model.html',
+            },
+          ],
+        },
+        {
+          week: 7,
+          day: '49',
+          category: 'Project',
+          title: 'Classic ML Model Comparison',
+          description:
+            'Implement and compare at least two classic machine learning models (e.g., Logistic Regression vs. Support Vector Machine vs. Decision Tree) on a classification task. Focus on data loading, preprocessing, training, comprehensive evaluation using various metrics, and discussing their trade-offs. Use a well-known dataset (e.g., Titanic, Iris, customer churn).',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Kaggle: Titanic - Machine Learning from Disaster',
+              link: 'https://www.kaggle.com/c/titanic',
+            },
+          ],
+        },
+
+        {
+          week: 8,
+          day: '50-52',
+          category: 'Deep Learning',
+          title: 'Neural Networks Architecture & Forward Propagation',
+          description:
+            'Dive deeper into Neural Network architectures. Understand the role of activation functions (ReLU, Sigmoid, Tanh) and their impact on learning. Explore different types of layers, network topologies (dense vs. convolutional), and the concept of universal approximation theorem. Focus on the forward pass: how input data flows through the network to produce an output.',
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Neural Networks and Deep Learning' on Coursera (Week 2-3)",
+              link: 'https://www.coursera.org/learn/neural-networks-deep-learning',
+            },
+            {
+              type: 'Reading',
+              text: 'Neural Networks and Deep Learning by Michael Nielsen (Chapter 1-2)',
+              link: 'http://neuralnetworksanddeeplearning.com/chap1.html',
+            },
+          ],
+        },
+        {
+          week: 8,
+          day: '53-55',
+          category: 'Deep Learning',
+          title: 'Backpropagation & Optimizers',
+          description:
+            'Unpack the backpropagation algorithm, the engine of neural network training. Understand how gradients are calculated and propagated backward through the network to update weights. Explore optimizers beyond basic Gradient Descent (e.g., Adam, RMSprop, SGD with momentum) and concepts like learning rate schedules. This is the core mechanism that enables deep learning models to learn from vast amounts of data.',
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Neural Networks and Deep Learning' on Coursera (Week 4)",
+              link: 'https://www.coursera.org/learn/neural-networks-deep-learning',
+            },
+            {
+              type: 'Video',
+              text: '3Blue1Brown: Backpropagation (YouTube Series)',
+              link: 'https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6bXl_D6pmzZNtY6FZoc2',
+            },
+          ],
+        },
+        {
+          week: 8,
+          day: '56',
+          category: 'Project',
+          title: 'Custom Neural Network Implementation',
+          description:
+            'Implement a simple feedforward neural network from scratch in Python (using NumPy) for a binary classification task. Focus on implementing the forward pass, computing the loss, and then implementing backpropagation to update weights. This exercise provides a deep understanding of neural network mechanics.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Build a simple neural network from scratch tutorial',
+              link: 'https://towardsdatascience.com/building-our-first-neural-network-in-python-cffc7746197b',
+            },
+          ],
+        },
+
+        {
+          week: 9,
+          day: '57-59',
+          category: 'Deep Learning',
+          title: 'Convolutional Neural Networks (CNNs) Deep Dive',
+          description:
+            'Master Convolutional Neural Networks (CNNs) for computer vision. Understand convolutional layers (filters, strides, padding), pooling layers, and how they extract hierarchical features. Learn about common CNN architectures (e.g., LeNet, AlexNet, VGG, ResNet concepts) and advanced techniques like data augmentation and transfer learning for image tasks. CNNs are fundamental for image classification, object detection, and other vision tasks.',
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Convolutional Neural Networks' on Coursera",
+              link: 'https://www.coursera.org/learn/convolutional-neural-networks',
+            },
+            {
+              type: 'Tutorial',
+              text: 'TensorFlow Keras CNN tutorial for CIFAR-10',
+              link: 'https://www.tensorflow.org/tutorials/images/cnn',
+            },
+          ],
+        },
+        {
+          week: 9,
+          day: '60-62',
+          category: 'Deep Learning',
+          title: 'Recurrent Neural Networks (RNNs) & LSTMs',
+          description:
+            'Explore Recurrent Neural Networks (RNNs) for sequential data. Understand their architecture, the vanishing/exploding gradient problem, and how LSTMs and GRUs solve these issues by incorporating gates. Learn about common applications like sentiment analysis, text generation, and machine translation. RNNs, especially LSTMs and GRUs, are foundational for understanding sequence modeling before diving into Transformers.',
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Sequence Models' on Coursera (RNNs, LSTMs, GRUs modules)",
+              link: 'https://www.coursera.org/learn/nlp-sequence-models',
+            },
+            {
+              type: 'Blog Post',
+              text: "Colah's Blog: Understanding LSTM Networks",
+              link: 'https://colah.github.io/posts/2015-08-Understanding-LSTMs/',
+            },
+          ],
+        },
+        {
+          week: 9,
+          day: '63',
+          category: 'Project',
+          title: 'Sequence Model Project (RNN/LSTM)',
+          description:
+            'Build and train an RNN or LSTM model for a sequence task like sentiment analysis on movie reviews or simple character-level text generation. Focus on data preparation for sequences, model building in TensorFlow/Keras or PyTorch, training, and evaluating performance. This project will solidify your understanding of recurrent architectures.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'TensorFlow text generation tutorial',
+              link: 'https://www.tensorflow.org/text/tutorials/text_generation',
+            },
+          ],
+        },
+
+        {
+          week: 10,
+          day: '64-66',
+          category: 'NLP',
+          title: 'Introduction to NLP & Text Preprocessing',
+          description:
+            'Understand the fundamentals of Natural Language Processing (NLP). Learn about common text preprocessing techniques: tokenization, stemming, lemmatization, stop-word removal, and text normalization. Explore basic NLP tasks such as text classification, sentiment analysis, and named entity recognition. Effective preprocessing is vital for preparing textual data for machine learning models.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Stanford University's CS224N: Natural Language Processing with Deep Learning (Introductory Lectures)",
+              link: 'https://www.youtube.com/playlist?list=PLoROMvodv4rOhcuXMZkNm7j3fVwBBY42z',
+            },
+            { type: 'Resource', text: 'NLTK (Natural Language Toolkit) Book', link: 'https://www.nltk.org/book/' },
+          ],
+        },
+        {
+          week: 10,
+          day: '67-69',
+          category: 'NLP',
+          title: 'Word Embeddings & Vector Representations',
+          description:
+            'Deepen your understanding of word embeddings, which represent words as dense vectors capturing semantic meaning. Explore methods like Word2Vec (Skip-gram, CBOW) and GloVe. Understand how these pre-trained embeddings improve the performance of NLP models by providing rich, contextualized word representations, moving beyond simple one-hot encoding. Learn how to load and use pre-trained embeddings.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Stanford University's CS224N: Natural Language Processing with Deep Learning (Word Vectors Lecture)",
+              link: 'https://www.youtube.com/playlist?list=PLoROMvodv4rOhcuXMZkNm7j3fVwBBY42z',
+            },
+            {
+              type: 'Paper',
+              text: 'Word2Vec original papers by Mikolov et al.',
+              link: 'https://arxiv.org/abs/1301.3781',
+            },
+          ],
+        },
+        {
+          week: 10,
+          day: '70',
+          category: 'Project',
+          title: 'NLP Text Classification with Embeddings',
+          description:
+            'Build a text classification model (e.g., sentiment analysis) using pre-trained word embeddings (like GloVe or Word2Vec) and a simple feedforward or convolutional network (1D ConvNet) for text. Focus on loading embeddings, preprocessing text, model architecture, training, and evaluation.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Keras tutorial: Text classification with pre-trained word embeddings',
+              link: 'https://keras.io/examples/nlp/text_classification_with_pretrained_word_embeddings/',
+            },
+          ],
+        },
+
+        {
+          week: 11,
+          day: '71-73',
+          category: 'LLMs',
+          title: 'Transformers: Encoder-Decoder Architecture',
+          description:
+            'Grasp the core innovation behind Large Language Models: the Transformer architecture. Dive into its full encoder-decoder structure, understanding how it processes input sequences and generates output sequences. Explore the concepts of self-attention, cross-attention, positional encoding, and feed-forward networks within this architecture. This is foundational for understanding seq2seq tasks like machine translation.',
+          resources: [
+            {
+              type: 'Blog Post',
+              text: "'The Illustrated Transformer' by Jay Alammar",
+              link: 'http://jalammar.github.io/illustrated-transformer/',
+            },
+            {
+              type: 'Paper',
+              text: "'Attention Is All You Need' (Vaswani et al., 2017)",
+              link: 'https://arxiv.org/abs/1706.03762',
+            },
+          ],
+        },
+        {
+          week: 11,
+          day: '74-76',
+          category: 'LLMs',
+          title: 'Pre-training, Fine-tuning, & Transfer Learning',
+          description:
+            'Understand the two-stage lifecycle of LLMs: massive unsupervised pre-training on vast text corpora, followed by supervised fine-tuning on specific downstream tasks. Learn how transfer learning leverages the general linguistic knowledge gained during pre-training to achieve high performance on specialized NLP tasks with less data. Explore different pre-training objectives (e.g., masked language modeling, next sentence prediction) and fine-tuning strategies.',
+          resources: [
+            {
+              type: 'Resource',
+              text: 'Hugging Face `transformers` library documentation on training and fine-tuning',
+              link: 'https://huggingface.co/docs/transformers/training',
+            },
+            {
+              type: 'Article',
+              text: 'Google AI Blog: Transfer Learning for NLP',
+              link: 'https://ai.googleblog.com/2019/08/transfer-learning-for-nlp-state-of-art.html',
+            },
+          ],
+        },
+        {
+          week: 11,
+          day: '77',
+          category: 'Project',
+          title: 'Transformer Fine-tuning Project',
+          description:
+            'Fine-tune a pre-trained Transformer model (e.g., BERT, DistilBERT) from Hugging Face for a specific NLP task like text classification or question answering. Focus on loading the pre-trained model and tokenizer, preparing your dataset for fine-tuning, training the model, and evaluating its performance. This is a practical application of LLM concepts.',
+          resources: [
+            {
+              type: 'Practice',
+              text: "Hugging Face 'Fine-tune a pretrained model' tutorial",
+              link: 'https://huggingface.co/docs/transformers/training',
+            },
+          ],
+        },
+
+        {
+          week: 12,
+          day: '78-80',
+          category: 'LLMs',
+          title: 'Prompt Engineering & LLM Applications',
+          description:
+            'Master the art of prompt engineering, crafting effective inputs to guide LLMs. Explore advanced techniques like zero-shot, few-shot, chain-of-thought, and RAG (Retrieval Augmented Generation) prompting to elicit specific behaviors and improve response quality. Learn about diverse LLM applications such as content generation, summarization, translation, code generation, and complex conversational AI. This practical skill maximizes LLM utility.',
+          resources: [
+            {
+              type: 'Guide',
+              text: 'OpenAI Prompt Engineering Guide',
+              link: 'https://platform.openai.com/docs/guides/prompt-engineering',
+            },
+            {
+              type: 'Course',
+              text: 'DeepLearning.AI: Prompt Engineering for Developers',
+              link: 'https://www.deeplearning.ai/courses/prompt-engineering-for-developers/',
+            },
+          ],
+        },
+        {
+          week: 12,
+          day: '81-83',
+          category: 'Advanced AI',
+          title: 'Reinforcement Learning: Core Algorithms',
+          description:
+            'Gain a deeper understanding of Reinforcement Learning (RL), where an agent learns through trial and error. Explore core algorithms like Q-learning, SARSA, and Policy Gradients (e.g., REINFORCE). Understand the concepts of exploration vs. exploitation, value functions, and policies. RL is critical for training autonomous systems and has growing relevance in optimizing LLMs.',
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Reinforcement Learning Specialization' on Coursera (Course 2)",
+              link: 'https://www.coursera.org/specializations/reinforcement-learning',
+            },
+            {
+              type: 'Video',
+              text: "David Silver's Reinforcement Learning Course (UCL)",
+              link: 'https://www.youtube.com/playlist?list=PL_iOQJ3FwXFh3tY6w0-jX7WJ0xQ2X2Yn',
+            },
+          ],
+        },
+        {
+          week: 12,
+          day: '84',
+          category: 'Project',
+          title: 'LLM Application Prototype',
+          description:
+            "Develop a small prototype application leveraging an LLM API. This could be a chatbot for a specific domain, a text summarizer, a simple code assistant, or a content generator. Focus on designing effective prompts and integrating the LLM's output into a user-friendly interface.",
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Explore Google AI Studio or OpenAI API documentation and examples.',
+              link: 'https://aistudio.google.com/app',
+            },
+          ],
+        },
+
+        {
+          week: 13,
+          day: '85-87',
+          category: 'Advanced AI',
+          title: 'Multi-modal AI & Generative Models (Advanced)',
+          description:
+            'Explore the cutting edge of AI: Multi-modal AI, which integrates and processes data from multiple sources like text, images, and audio. Dive deeper into Generative AI, focusing on the architectural details and advancements in Generative Adversarial Networks (GANs) and Diffusion Models. Understand their underlying principles and recent breakthroughs in generating realistic and diverse content. Discuss applications beyond images to video and audio synthesis.',
+          resources: [
+            {
+              type: 'Article',
+              text: 'Google AI Blog: Latest in Multi-modal AI',
+              link: 'https://ai.googleblog.com/search/label/Multimodal%20AI',
+            },
+            {
+              type: 'Paper',
+              text: 'Recent survey papers or influential works on Diffusion Models (e.g., DALL-E 2, Stable Diffusion overview papers)',
+              link: 'https://arxiv.org/abs/2112.10752',
+            },
+          ],
+        },
+        {
+          week: 13,
+          day: '88-89',
+          category: 'Agentic AI',
+          title: 'Agentic AI Systems & Tool Use',
+          description:
+            'Step into the future with Agentic AI: autonomous systems that can set goals, plan, execute tasks, and learn from their environment with minimal human oversight. Understand advanced concepts like agent architectures, long-term memory, reasoning capabilities, and critical tool-use integration (how agents leverage external APIs, databases, or web search to achieve complex goals). This represents a significant shift towards more intelligent and proactive AI systems.',
+          resources: [
+            {
+              type: 'Article',
+              text: 'Google Cloud: What is Agentic AI? (Revisit with deeper understanding)',
+              link: 'https://cloud.google.com/discover/what-is-agentic-ai',
+            },
+            {
+              type: 'Frameworks',
+              text: 'Deep dive into Agentic AI frameworks like LangChain or AutoGPT (advanced tutorials/examples)',
+              link: 'https://www.langchain.com/docs/get_started/introduction',
+            },
+          ],
+        },
+        {
+          week: 13,
+          day: '90',
+          category: 'Ethical AI & Future Trends',
+          title: 'Ethical AI, Safety & The Future',
+          description:
+            "Reflect deeply on the critical ethical considerations in AI development: advanced bias detection and mitigation, fairness in deployment, explainable AI (XAI) techniques, robust accountability frameworks, and privacy-preserving AI. Understand the profound societal impacts of advanced AI, including job displacement and autonomous decision-making. Explore the most recent emerging trends, focusing on responsible AI practices, AI safety research, and the evolving global regulatory landscape, preparing you for AI's future challenges and opportunities.",
+          resources: [
+            {
+              type: 'Course',
+              text: 'Google AI Ethics Principles & Practices (Advanced concepts)',
+              link: 'https://ai.google/responsibility/principles/',
+            },
+            {
+              type: 'Report',
+              text: 'Recent reports from leading AI ethics organizations (e.g., AI Now Institute, Partnership on AI)',
+              link: 'https://ainowinstitute.org/publications.html',
+            },
+          ],
+        },
+      ];
+
+      let state = [];
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const roadmapGrid = document.getElementById('roadmap-grid');
+        const modal = document.getElementById('detail-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function initializeState() {
+          const savedState = localStorage.getItem('aiRoadmapState90Day'); // Unique key for 90-day plan
+          if (savedState) {
+            state = JSON.parse(savedState);
+          } else {
+            state = roadmapData.map((_, index) => ({ id: index, completed: false }));
+          }
+        }
+
+        function saveState() {
+          localStorage.setItem('aiRoadmapState90Day', JSON.stringify(state)); // Unique key for 90-day plan
+        }
+
+        function renderRoadmap() {
+          roadmapGrid.innerHTML = '';
+          let currentWeek = 0;
+          let weekContainer;
+
+          roadmapData.forEach((item, index) => {
+            if (item.week !== currentWeek) {
+              currentWeek = item.week;
+              const weekHeader = document.createElement('h2');
+              weekHeader.id = `week-${currentWeek}`;
+              weekHeader.className = 'text-3xl font-bold text-teal-700 mb-6 scroll-mt-24';
+              weekHeader.textContent = `Week ${currentWeek}: ${getWeekTitle(currentWeek)}`;
+
+              const weekSection = document.createElement('section');
+              weekSection.appendChild(weekHeader);
+
+              const dayGrid = document.createElement('div');
+              dayGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6';
+              weekSection.appendChild(dayGrid);
+
+              roadmapGrid.appendChild(weekSection);
+              weekContainer = dayGrid;
+            }
+
+            const card = createDayCard(item, index);
+            weekContainer.appendChild(card);
+          });
+          updateProgress();
+          renderChart();
+        }
+
+        function getWeekTitle(weekNumber) {
+          switch (weekNumber) {
+            case 1:
+              return 'Python Fundamentals (Part 1)';
+            case 2:
+              return 'Python Fundamentals (Part 2)';
+            case 3:
+              return 'Data Manipulation with Pandas & NumPy';
+            case 4:
+              return 'Data Visualization & Linear Algebra';
+            case 5:
+              return 'Calculus & Optimization';
+            case 6:
+              return 'Probability & Statistics';
+            case 7:
+              return 'Core Machine Learning Concepts';
+            case 8:
+              return 'Deep Learning Fundamentals & Backpropagation';
+            case 9:
+              return 'CNNs, RNNs & Sequence Models';
+            case 10:
+              return 'NLP & Advanced Text Representations';
+            case 11:
+              return 'Transformer Architecture & LLM Training';
+            case 12:
+              return 'Prompt Engineering & Reinforcement Learning';
+            case 13:
+              return 'Multi-modal AI, Agentic AI & Ethics';
+            default:
+              return '';
+          }
+        }
+
+        function createDayCard(item, index) {
+          const card = document.createElement('div');
+          card.className =
+            'day-card bg-white p-5 rounded-lg shadow-sm border-2 border-transparent cursor-pointer flex flex-col justify-between';
+          if (state[index].completed) {
+            card.classList.add('completed');
+          }
+          card.dataset.index = index;
+
+          card.innerHTML = `
+                    <div>
+                        <p class="text-sm font-semibold text-teal-600 mb-1">Day ${item.day}</p>
+                        <h3 class="day-title font-bold text-lg text-stone-800">${item.title}</h3>
+                    </div>
+                    <div class="flex items-center justify-end mt-4">
+                        <label for="check-${index}" class="text-sm text-stone-500 mr-2">Done</label>
+                        <input type="checkbox" id="check-${index}" data-index="${index}" class="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500" ${
+            state[index].completed ? 'checked' : ''
+          }>
+                    </div>
+                `;
+
+          card.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') {
+              openModal(index);
+            }
+          });
+
+          card.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+            toggleComplete(index, e.target.checked);
+          });
+
+          return card;
+        }
+
+        function toggleComplete(index, isCompleted) {
+          state[index].completed = isCompleted;
+          const card = document.querySelector(`.day-card[data-index='${index}']`);
+          if (isCompleted) {
+            card.classList.add('completed');
+          } else {
+            card.classList.remove('completed');
+          }
+          saveState();
+          updateProgress();
+        }
+
+        function updateProgress() {
+          const completedCount = state.filter((s) => s.completed).length;
+          const totalCount = state.length;
+          const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+          document.getElementById('progress-bar').style.width = `${percentage}%`;
+          document.getElementById(
+            'progress-text'
+          ).textContent = `${percentage}% Complete (${completedCount}/${totalCount})`;
+        }
+
+        function openModal(index) {
+          const item = roadmapData[index];
+          document.getElementById('modal-title').textContent = item.title;
+          document.getElementById('modal-category').textContent = `Day ${item.day} • ${item.category}`;
+          document.getElementById('modal-description').textContent = item.description;
+
+          const resourcesList = document.getElementById('modal-resources');
+          resourcesList.innerHTML = '';
+          item.resources.forEach((res) => {
+            const li = document.createElement('li');
+            li.className = 'mb-3';
+            li.innerHTML = `
+                        <a href="${res.link}" target="_blank" rel="noopener noreferrer" class="flex items-center p-3 bg-stone-100 hover:bg-teal-50 rounded-md transition-colors group">
+                            <span class="font-semibold text-teal-700 w-24 flex-shrink-0">${res.type}:</span>
+                            <span class="text-stone-700 group-hover:text-teal-800">${res.text}</span>
+                            <span class="ml-auto text-teal-500 group-hover:translate-x-1 transition-transform">&#8594;</span>
+                        </a>
+                    `;
+            resourcesList.appendChild(li);
+          });
+
+          modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+          modal.style.display = 'none';
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeModal();
+          }
+        });
+
+        navLinks.forEach((link) => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector(link.getAttribute('href')).scrollIntoView({
+              behavior: 'smooth',
+            });
+          });
+        });
+
+        function renderChart() {
+          const ctx = document.getElementById('overviewChart').getContext('2d');
+          const categoryCounts = roadmapData.reduce((acc, item) => {
+            // Sum up days for categories based on the day string 'X-Y'
+            const days = item.day.includes('-')
+              ? parseInt(item.day.split('-')[1]) - parseInt(item.day.split('-')[0]) + 1
+              : 1;
+            acc[item.category] = (acc[item.category] || 0) + days;
+            return acc;
+          }, {});
+
+          const labels = Object.keys(categoryCounts);
+          const data = Object.values(categoryCounts);
+
+          // Ensure enough colors for all categories
+          const backgroundColors = [
+            '#14b8a6', // teal-500 (Foundations, Python, Data Analysis)
+            '#f97316', // orange-500 (Mathematics)
+            '#0ea5e9', // sky-500 (Statistics)
+            '#8b5cf6', // violet-500 (Deep Learning)
+            '#ec4899', // pink-500 (NLP)
+            '#22c55e', // green-500 (LLMs)
+            '#ef4444', // red-500 (Advanced AI)
+            '#6366f1', // indigo-500 (Agentic AI)
+            '#a855f7', // purple-500 (Ethical AI)
+            '#eab308', // yellow-500 (Projects)
+          ];
+
+          if (window.myOverviewChart instanceof Chart) {
+            window.myOverviewChart.destroy();
+          }
+
+          window.myOverviewChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Days per Topic',
+                  data: data,
+                  backgroundColor: backgroundColors.slice(0, labels.length),
+                  borderColor: '#f5f5f4', // stone-100
+                  borderWidth: 4,
+                  hoverOffset: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    font: {
+                      size: 14,
+                      family: 'Inter',
+                    },
+                    padding: 20,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      let label = context.label || '';
+                      if (label) {
+                        label += ': ';
+                      }
+                      if (context.parsed !== null) {
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        label += `${value} days (${percentage}%)`;
+                      }
+                      return label;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        initializeState();
+        renderRoadmap();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Learning Roadmaps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: This is a simple landing page designed to offer users a clear choice between two distinct AI study roadmaps: a 30-day accelerated plan and a more comprehensive 60-day plan. The structure uses a centered flexbox layout to present two prominent buttons, each linking to its respective roadmap HTML file. This direct navigation ensures immediate user action and minimizes cognitive load, making it a highly intuitive entry point to the learning content. -->
+    <!-- Visualization & Content Choices: 
+        - Navigation Choices: Report Info -> Different roadmap durations. Goal -> Inform/Navigate. Viz/Presentation -> Two distinct buttons (HTML/Tailwind). Interaction -> Click to open new HTML file. Justification -> Simple, clear, and direct call to action, allowing users to choose their preferred learning pace.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f5f4; /* stone-100 */
+      }
+      .plan-button {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      }
+      .plan-button:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 25px -5px rgb(0 0 0 / 0.1), 0 6px 15px -5px rgb(0 0 0 / 0.08);
+      }
+    </style>
+  </head>
+  <body class="text-stone-800 flex items-center justify-center min-h-screen">
+    <div class="text-center p-6 max-w-xl mx-auto bg-white rounded-lg shadow-xl">
+      <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-4">Choose Your AI Journey</h1>
+      <p class="text-lg text-stone-600 mb-8">
+        Select a study plan that best fits your learning pace and available time.
+      </p>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-6">
+        <a
+          href="30_day_ai_roadmap.html"
+          target="_blank"
+          class="plan-button block bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-lg text-xl"
+        >
+          30 Days
+        </a>
+        <a
+          href="60_day_ai_roadmap.html"
+          target="_blank"
+          class="plan-button block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full shadow-lg text-xl"
+        >
+          60 Days
+        </a>
+        <a
+          href="90_day_ai_roadmap.html"
+          target="_blank"
+          class="plan-button block bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-8 rounded-full shadow-lg text-xl"
+        >
+          90 Days
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

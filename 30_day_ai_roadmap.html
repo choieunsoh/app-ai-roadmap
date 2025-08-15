@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive 30-Day AI Study Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: The application is structured as an interactive dashboard rather than a linear document. The core is a 4-week grid layout, providing a high-level overview. Clicking on any day opens a modal with detailed information, reducing initial cognitive load. This task-oriented design is enhanced with a progress tracker (checkboxes and a main progress bar) and a summary chart to motivate the user and provide analytical insight into the study plan. Navigation is facilitated by sticky header links, allowing quick jumps between weeks. This structure was chosen to transform a static plan into a dynamic, engaging, and user-centric learning tool that encourages interaction and tracks progress effectively. -->
+    <!-- Visualization & Content Choices: 
+        - Roadmap Overview: Report Info -> 30-day chronological plan. Goal -> Organize/Inform. Viz/Presentation -> Interactive Grid of Cards (HTML/Tailwind). Interaction -> Click to open detail modal. Justification -> Provides a clear, non-overwhelming overview of the entire month.
+        - Daily Details: Report Info -> Topic description and resources. Goal -> Inform. Viz/Presentation -> Modal Dialog (HTML/Tailwind/JS). Interaction -> Display on click, dismissible. Justification -> Hides complex details until needed, keeping the main interface clean.
+        - Progress Tracking: Report Info -> Completion of daily tasks. Goal -> Engage/Motivate. Viz/Presentation -> Checkboxes & Progress Bar (HTML/Tailwind/JS). Interaction -> Click to update state. Justification -> Gamifies the learning process and provides immediate visual feedback.
+        - Topic Distribution: Report Info -> Categorization of daily topics. Goal -> Analyze/Inform. Viz/Presentation -> Donut Chart (Chart.js/Canvas). Interaction -> Hover for tooltips. Justification -> Offers a quick visual summary of how time is allocated across different AI domains.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f5f4; /* stone-100 */
+      }
+      .day-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      }
+      .day-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      }
+      .day-card.completed {
+        background-color: #f0fdfa; /* teal-50 */
+        border-color: #14b8a6; /* teal-500 */
+      }
+      .day-card.completed .day-title {
+        text-decoration: line-through;
+        color: #52525b; /* zinc-600 */
+      }
+      .modal {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 350px;
+        max-height: 400px;
+      }
+    </style>
+  </head>
+  <body class="text-stone-800">
+    <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <header class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2">Your 30-Day AI Learning Journey</h1>
+        <p class="text-lg text-stone-600">An interactive roadmap to master AI, LLMs, and Agentic AI.</p>
+      </header>
+
+      <div class="sticky top-0 z-10 bg-stone-100/80 backdrop-blur-sm py-4 mb-8">
+        <div class="max-w-4xl mx-auto">
+          <div class="mb-4">
+            <div class="flex justify-between mb-1">
+              <span class="text-base font-medium text-teal-700">Progress</span>
+              <span id="progress-text" class="text-sm font-medium text-teal-700">0%</span>
+            </div>
+            <div class="w-full bg-stone-200 rounded-full h-2.5">
+              <div
+                id="progress-bar"
+                class="bg-teal-500 h-2.5 rounded-full"
+                style="width: 0%; transition: width 0.5s ease-in-out"
+              ></div>
+            </div>
+          </div>
+          <nav class="flex justify-center space-x-2 sm:space-x-4 bg-white p-2 rounded-full shadow-sm">
+            <a
+              href="#week-1"
+              class="nav-link px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Week 1</a
+            >
+            <a
+              href="#week-2"
+              class="nav-link px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Week 2</a
+            >
+            <a
+              href="#week-3"
+              class="nav-link px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Week 3</a
+            >
+            <a
+              href="#week-4"
+              class="nav-link px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-stone-700 hover:bg-teal-50 rounded-full transition-colors"
+              >Week 4</a
+            >
+          </nav>
+        </div>
+      </div>
+
+      <main id="roadmap-grid" class="space-y-12"></main>
+
+      <section class="mt-16 pt-8 border-t border-stone-200">
+        <h2 class="text-3xl font-bold text-center text-teal-800 mb-4">Roadmap Overview</h2>
+        <p class="text-center text-stone-600 max-w-2xl mx-auto mb-8">
+          This chart provides a visual breakdown of your 30-day learning plan, showing how many days are dedicated to
+          each core area of AI. Use it to understand the focus of the curriculum and how foundational concepts build
+          towards more advanced topics.
+        </p>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <div class="chart-container">
+            <canvas id="overviewChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      id="detail-modal"
+      class="modal hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+    >
+      <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 id="modal-title" class="text-2xl font-bold text-teal-800">1</h3>
+              <p id="modal-category" class="text-sm font-medium text-teal-600"></p>
+            </div>
+            <button id="close-modal-btn" class="text-stone-500 hover:text-stone-800 transition-colors">
+              <span class="text-2xl font-bold">&times;</span>
+            </button>
+          </div>
+          <div id="modal-body" class="prose max-w-none text-stone-700">
+            <p id="modal-description"></p>
+            <h4 class="font-semibold mt-6 mb-3 text-stone-800">Where to Learn:</h4>
+            <ul id="modal-resources" class="list-none p-0"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const roadmapData = [
+        {
+          week: 1,
+          day: '1-2',
+          category: 'Foundations',
+          title: 'Introduction to AI & ML Basics',
+          description:
+            "Artificial Intelligence (AI) encompasses systems that can perform tasks requiring human intelligence, such as learning, reasoning, and problem-solving. Machine Learning (ML), a subset of AI, focuses on algorithms that allow systems to learn from data without explicit programming. You'll explore supervised learning (predicting outcomes from labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through trial and error with rewards). Understanding these paradigms is crucial as they form the bedrock of almost all modern AI applications.",
+          resources: [
+            {
+              type: 'Course',
+              text: "Andrew Ng's 'Machine Learning Specialization' on Coursera (Courses 1 & 2) or 'Machine Learning Crash Course' by Google AI Education.",
+              link: 'https://www.coursera.org/specializations/machine-learning-introduction',
+            },
+            {
+              type: 'Reading',
+              text: "'Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow' by Aurélien Géron (Chapters 1-2).",
+              link: 'https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/',
+            },
+          ],
+        },
+        {
+          week: 1,
+          day: '3-4',
+          category: 'Foundations',
+          title: 'Linear & Logistic Regression',
+          description:
+            'Linear Regression is a fundamental supervised learning algorithm used for predicting a continuous output variable based on one or more input features. It models the relationship between inputs and outputs as a straight line. Logistic Regression, despite its name, is a classification algorithm for binary outcomes. It uses a logistic function to estimate probabilities. These algorithms are foundational for understanding concepts like cost functions and gradient descent, vital for training more complex neural networks.',
+          resources: [
+            {
+              type: 'Course',
+              text: "Continue with Andrew Ng's 'Machine Learning Specialization' on Coursera.",
+              link: 'https://www.coursera.org/specializations/machine-learning-introduction',
+            },
+            {
+              type: 'Practice',
+              text: 'Kaggle introductory notebooks on Linear and Logistic Regression.',
+              link: 'https://www.kaggle.com/learn/intro-to-machine-learning',
+            },
+          ],
+        },
+        {
+          week: 1,
+          day: '5-6',
+          category: 'Foundations',
+          title: 'Neural Networks Fundamentals',
+          description:
+            "Neural Networks are computational models inspired by the human brain, forming the core of deep learning. They consist of interconnected nodes (neurons) organized in layers. You'll learn about feedforward networks, backpropagation (the algorithm for training networks by adjusting weights), and the role of activation functions. Grasping these basics is essential before moving to more specialized deep learning architectures like CNNs and RNNs.",
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Neural Networks and Deep Learning' (Part 1 of Deep Learning Specialization) on Coursera.",
+              link: 'https://www.coursera.org/learn/neural-networks-deep-learning',
+            },
+            {
+              type: 'Tutorials',
+              text: 'TensorFlow or PyTorch official introductory tutorials on building simple neural networks.',
+              link: 'https://www.tensorflow.org/tutorials',
+            },
+          ],
+        },
+        {
+          week: 1,
+          day: '7',
+          category: 'Project',
+          title: 'Review & Project 1 (Simple Classification)',
+          description:
+            'Consolidate your understanding from Week 1. Choose a simple tabular dataset (e.g., Iris, Titanic survival) and apply logistic regression or a basic neural network to solve a classification problem. Focus on data preprocessing, model training, evaluation metrics (accuracy, precision, recall), and interpreting results. This hands-on experience will solidify your theoretical knowledge and build confidence in implementing fundamental ML algorithms.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Implement a classification project using Python on a public dataset from Kaggle or UCI Machine Learning Repository.',
+              link: 'https://www.kaggle.com/datasets',
+            },
+            {
+              type: 'Resource',
+              text: 'Review documentation for sklearn.linear_model.LogisticRegression and tf.keras.models.Sequential.',
+              link: 'https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '8-9',
+          category: 'Deep Learning',
+          title: 'Convolutional Neural Networks (CNNs)',
+          description:
+            "Convolutional Neural Networks (CNNs) are a class of deep neural networks predominantly used for analyzing visual imagery. Key concepts include convolutional layers (applying filters to detect patterns), pooling layers (down-sampling), and fully connected layers. You'll understand why CNNs are so effective for tasks like image classification, object detection, and image generation. Their ability to extract hierarchical features makes them indispensable in computer vision.",
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Convolutional Neural Networks' on Coursera.",
+              link: 'https://www.coursera.org/learn/convolutional-neural-networks',
+            },
+            {
+              type: 'Tutorials',
+              text: 'TensorFlow or PyTorch image classification tutorials (e.g., CIFAR-10, MNIST).',
+              link: 'https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '10-11',
+          category: 'Deep Learning',
+          title: 'Recurrent Neural Networks (RNNs) & Sequences',
+          description:
+            "Recurrent Neural Networks (RNNs) are designed to process sequential data. Unlike feedforward networks, RNNs have loops that allow information to persist, giving them a 'memory'. You'll learn about vanilla RNNs, and more importantly, their advanced variants like Long Short-Term Memory (LSTM) networks and Gated Recurrent Units (GRUs), which address key training challenges. Understanding RNNs is foundational for many NLP tasks.",
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Sequence Models' on Coursera.",
+              link: 'https://www.coursera.org/learn/nlp-sequence-models',
+            },
+            {
+              type: 'Tutorials',
+              text: 'PyTorch or TensorFlow tutorials on RNNs/LSTMs for sequence generation or sentiment analysis.',
+              link: 'https://www.tensorflow.org/text/tutorials/text_generation',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '12-13',
+          category: 'NLP',
+          title: 'Introduction to NLP & Word Embeddings',
+          description:
+            "Natural Language Processing (NLP) is a field of AI focused on enabling computers to understand, interpret, and generate human language. A crucial concept is Word Embeddings, which represent words as dense vectors, capturing semantic relationships. You'll explore techniques like Word2Vec and GloVe, which map words to numerical vectors such that words with similar meanings are close together in the vector space. These embeddings are a foundational step for nearly all modern NLP models.",
+          resources: [
+            {
+              type: 'Course',
+              text: "Stanford University's CS224N: Natural Language Processing with Deep Learning (lectures on YouTube).",
+              link: 'https://www.youtube.com/playlist?list=PLoROMvodv4rOhcuXMZkNm7j3fVwBBY42z',
+            },
+            {
+              type: 'Reading',
+              text: 'Explore original papers on Word2Vec and GloVe.',
+              link: 'https://arxiv.org/abs/1301.3781',
+            },
+          ],
+        },
+        {
+          week: 2,
+          day: '14',
+          category: 'Project',
+          title: 'Review & Project 2 (Text Classification)',
+          description:
+            'Consolidate your knowledge of deep learning and NLP. Pick a text classification task, such as sentiment analysis or spam detection. Use either an RNN (LSTM/GRU) or a simple feedforward network with word embeddings. Focus on text preprocessing (tokenization, padding), implementing your chosen model, training, and evaluating its performance. This project will provide practical experience in handling text data.',
+          resources: [
+            {
+              type: 'Practice',
+              text: 'Build a text classification model using a dataset from Kaggle (e.g., IMDb movie reviews).',
+              link: 'https://www.kaggle.com/c/word2vec-nlp-tutorial',
+            },
+            {
+              type: 'Resource',
+              text: 'Hugging Face `transformers` library (for understanding high-level concepts).',
+              link: 'https://huggingface.co/docs/transformers/index',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '15-16',
+          category: 'LLMs',
+          title: 'Transformers Architecture',
+          description:
+            "The Transformer architecture revolutionized NLP and is the backbone of all modern Large Language Models (LLMs). Its core innovation is the 'Self-Attention' mechanism, which allows the model to weigh the importance of different words in a sequence when processing a particular word. You'll delve into encoders, decoders, multi-head attention, and positional encoding. Understanding how Transformers process sequences in parallel is key to grasping the power of LLMs.",
+          resources: [
+            {
+              type: 'Blog Post',
+              text: "'The Illustrated Transformer' by Jay Alammar.",
+              link: 'http://jalammar.github.io/illustrated-transformer/',
+            },
+            {
+              type: 'Paper',
+              text: "'Attention Is All You Need' (Vaswani et al., 2017).",
+              link: 'https://arxiv.org/abs/1706.03762',
+            },
+            {
+              type: 'Video',
+              text: "StatQuest with Josh Starmer: 'Transformers Explained.'",
+              link: 'https://www.youtube.com/watch?v=U0s0f995w14',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '17-18',
+          category: 'LLMs',
+          title: 'Pre-training & Fine-tuning LLMs',
+          description:
+            'LLMs undergo a two-stage training process: pre-training and fine-tuning. Pre-training involves training on massive amounts of unlabeled text data. This phase enables the model to learn vast linguistic patterns and world knowledge. Fine-tuning then adapts the pre-trained model to specific downstream tasks (e.g., summarization, question answering) using smaller, labeled datasets. This transfer learning approach makes LLMs incredibly versatile.',
+          resources: [
+            {
+              type: 'Resource',
+              text: 'Hugging Face `transformers` library documentation and examples on fine-tuning.',
+              link: 'https://huggingface.co/docs/transformers/training',
+            },
+            {
+              type: 'Articles',
+              text: 'Explore articles on transfer learning in NLP and the specifics of BERT, GPT-2/3 pre-training.',
+              link: 'https://huggingface.co/docs/transformers/model_doc/bert',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '19-20',
+          category: 'LLMs',
+          title: 'Prompt Engineering & LLM Applications',
+          description:
+            "Prompt Engineering is the art and science of crafting effective inputs (prompts) to guide LLMs to produce desired outputs. It involves techniques like providing clear instructions, few-shot examples, and chain-of-thought reasoning. You'll explore common LLM applications such as text generation, summarization, and conversational AI. Mastering prompt engineering is a critical skill for anyone working with LLMs.",
+          resources: [
+            {
+              type: 'Guide',
+              text: "OpenAI Prompt Engineering Guide or Google's 'Introduction to Generative AI' course.",
+              link: 'https://platform.openai.com/docs/guides/prompt-engineering',
+            },
+            {
+              type: 'Practice',
+              text: 'Experiment with public LLM APIs (e.g., Google Gemini, OpenAI Playground).',
+              link: 'https://aistudio.google.com/app',
+            },
+          ],
+        },
+        {
+          week: 3,
+          day: '21',
+          category: 'Project',
+          title: 'Review & Project 3 (LLM-driven Text Generation)',
+          description:
+            'Review concepts related to Transformers and LLMs. For your project, use a pre-trained LLM to perform a text generation task. This could be generating creative stories, answering questions, or summarizing articles. Experiment with different prompts and parameters (e.g., temperature, top-p sampling) to understand how they influence the output. This project will give you hands-on experience interacting with and controlling LLMs.',
+          resources: [
+            {
+              type: 'Practice',
+              text: "Use a free-tier LLM API or Hugging Face's `transformers` library to build a simple application.",
+              link: 'https://huggingface.co/tasks/text-generation',
+            },
+            {
+              type: 'Resource',
+              text: 'Explore Hugging Face Models and Datasets for various LLMs.',
+              link: 'https://huggingface.co/models',
+            },
+          ],
+        },
+        {
+          week: 4,
+          day: '22-23',
+          category: 'Advanced AI',
+          title: 'Reinforcement Learning (RL) Overview',
+          description:
+            "Reinforcement Learning (RL) is a paradigm where an agent learns to make sequential decisions by interacting with an environment to maximize a cumulative reward. You'll learn about core components like agents, environments, states, actions, rewards, and policies. Key algorithms like Q-learning and Policy Gradients will be introduced. RL is crucial for training agents in complex, dynamic environments, from game playing to robotics.",
+          resources: [
+            {
+              type: 'Course',
+              text: "DeepLearning.AI's 'Reinforcement Learning Specialization' on Coursera (Course 1).",
+              link: 'https://www.coursera.org/specializations/reinforcement-learning',
+            },
+            {
+              type: 'Book',
+              text: "'Reinforcement Learning: An Introduction' by Sutton and Barto (Chapters 1-3).",
+              link: 'http://incompleteideas.net/book/the-book-2nd.html',
+            },
+            {
+              type: 'Tutorials',
+              text: 'OpenAI Gym tutorials for basic RL environments.',
+              link: 'https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/',
+            },
+          ],
+        },
+        {
+          week: 4,
+          day: '24-25',
+          category: 'Advanced AI',
+          title: 'Multi-modal AI & Generative Models',
+          description:
+            "Multi-modal AI deals with processing information from multiple modalities, such as text, images, and audio. You'll also delve into Generative Models, designed to create new content. This includes Generative Adversarial Networks (GANs) for images and Diffusion Models, which are state-of-the-art for image and video generation. These fields are pushing the boundaries of AI creativity.",
+          resources: [
+            {
+              type: 'Articles',
+              text: 'Google AI Blog on multi-modal AI and generative models.',
+              link: 'https://blog.google/technology/ai/',
+            },
+            {
+              type: 'Tutorials',
+              text: 'PyTorch/TensorFlow examples of GANs or Diffusion Models.',
+              link: 'https://www.tensorflow.org/tutorials/generative/dcgan',
+            },
+            {
+              type: 'Papers',
+              text: 'Survey papers on multi-modal learning or seminal GAN/Diffusion papers.',
+              link: 'https://arxiv.org/abs/1904.03478',
+            },
+          ],
+        },
+        {
+          week: 4,
+          day: '26-27',
+          category: 'Agentic AI',
+          title: 'Agentic AI Concepts',
+          description:
+            'Agentic AI refers to autonomous AI systems capable of setting goals, planning actions, and executing them with minimal human intervention. Key concepts include: Planning (breaking down goals), Memory (retaining context), Tool Use (leveraging external APIs), and Reflection (evaluating performance). This is the frontier of AI, moving from simple response generation to proactive, goal-driven systems.',
+          resources: [
+            {
+              type: 'Articles/Blogs',
+              text: "Google Cloud 'What is Agentic AI?', DeepMind blog posts on agents.",
+              link: 'https://cloud.google.com/discover/what-is-agentic-ai',
+            },
+            {
+              type: 'Frameworks',
+              text: 'Explore concepts behind LangChain, AutoGPT, or BabyAGI.',
+              link: 'https://www.langchain.com/',
+            },
+            {
+              type: 'Paper',
+              text: "'ReAct: Synergizing Reasoning and Acting in Language Models'.",
+              link: 'https://arxiv.org/abs/2210.03629',
+            },
+          ],
+        },
+        {
+          week: 4,
+          day: '28',
+          category: 'Advanced AI',
+          title: 'Ethical AI & Future Trends',
+          description:
+            "As AI becomes more powerful, understanding its ethical implications is paramount. This includes topics like bias, fairness, transparency (explainable AI), accountability, and privacy. You'll also look at emerging trends like embodied AI (AI in robots) and AI for science. Being aware of these challenges and opportunities is vital for responsible AI development.",
+          resources: [
+            {
+              type: 'Course',
+              text: "'Ethics in AI' by edX or Coursera.",
+              link: 'https://www.coursera.org/learn/ai-ethics',
+            },
+            {
+              type: 'Reports',
+              text: 'Read reports from organizations like the AI Now Institute or the Partnership on AI.',
+              link: 'https://ainowinstitute.org/',
+            },
+            { type: 'Articles', text: 'Google AI Blog on Responsible AI.', link: 'https://ai.google/responsibility/' },
+          ],
+        },
+        {
+          week: 4,
+          day: '29-30',
+          category: 'Project',
+          title: 'Capstone Project & Deep Dive',
+          description:
+            "Dedicate these two days to an ambitious capstone project. Consider building a simple 'agent-like' system, for example, an information retrieval agent that uses an LLM to answer questions by first searching a predefined knowledge base (simulating tool use). Alternatively, choose an area you found most fascinating and dive deeper into a specific paper, an advanced algorithm, or a more complex problem on Kaggle.",
+          resources: [
+            {
+              type: 'Project',
+              text: 'Choose a small project idea that combines at least two major topics.',
+              link: 'https://github.com/topics/machine-learning-projects',
+            },
+            {
+              type: 'Explore',
+              text: 'Read advanced papers in your area of interest on arXiv.',
+              link: 'https://arxiv.org/',
+            },
+            {
+              type: 'Community',
+              text: "Engage with AI communities online (e.g., Reddit's r/MachineLearning, Kaggle forums).",
+              link: 'https://www.reddit.com/r/MachineLearning/',
+            },
+          ],
+        },
+      ];
+
+      let state = [];
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const roadmapGrid = document.getElementById('roadmap-grid');
+        const modal = document.getElementById('detail-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function initializeState() {
+          const savedState = localStorage.getItem('aiRoadmapState');
+          if (savedState) {
+            state = JSON.parse(savedState);
+          } else {
+            state = roadmapData.map((_, index) => ({ id: index, completed: false }));
+          }
+        }
+
+        function saveState() {
+          localStorage.setItem('aiRoadmapState', JSON.stringify(state));
+        }
+
+        function renderRoadmap() {
+          roadmapGrid.innerHTML = '';
+          let currentWeek = 0;
+          let weekContainer;
+
+          roadmapData.forEach((item, index) => {
+            if (item.week !== currentWeek) {
+              currentWeek = item.week;
+              const weekHeader = document.createElement('h2');
+              weekHeader.id = `week-${currentWeek}`;
+              weekHeader.className = 'text-3xl font-bold text-teal-700 mb-6 scroll-mt-24';
+              weekHeader.textContent = `Week ${currentWeek}: ${getWeekTitle(currentWeek)}`;
+
+              const weekSection = document.createElement('section');
+              weekSection.appendChild(weekHeader);
+
+              const dayGrid = document.createElement('div');
+              dayGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6';
+              weekSection.appendChild(dayGrid);
+
+              roadmapGrid.appendChild(weekSection);
+              weekContainer = dayGrid;
+            }
+
+            const card = createDayCard(item, index);
+            weekContainer.appendChild(card);
+          });
+          updateProgress();
+          renderChart();
+        }
+
+        function getWeekTitle(weekNumber) {
+          switch (weekNumber) {
+            case 1:
+              return 'Foundations of AI & Machine Learning';
+            case 2:
+              return 'Deep Learning & NLP Basics';
+            case 3:
+              return 'Large Language Models (LLMs)';
+            case 4:
+              return 'Advanced Topics & Agentic AI';
+            default:
+              return '';
+          }
+        }
+
+        function createDayCard(item, index) {
+          const card = document.createElement('div');
+          card.className =
+            'day-card bg-white p-5 rounded-lg shadow-sm border-2 border-transparent cursor-pointer flex flex-col justify-between';
+          if (state[index].completed) {
+            card.classList.add('completed');
+          }
+          card.dataset.index = index;
+
+          card.innerHTML = `
+                    <div>
+                        <p class="text-sm font-semibold text-teal-600 mb-1">Day ${item.day}</p>
+                        <h3 class="day-title font-bold text-lg text-stone-800">${item.title}</h3>
+                    </div>
+                    <div class="flex items-center justify-end mt-4">
+                        <label for="check-${index}" class="text-sm text-stone-500 mr-2">Done</label>
+                        <input type="checkbox" id="check-${index}" data-index="${index}" class="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500" ${
+            state[index].completed ? 'checked' : ''
+          }>
+                    </div>
+                `;
+
+          card.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') {
+              openModal(index);
+            }
+          });
+
+          card.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+            toggleComplete(index, e.target.checked);
+          });
+
+          return card;
+        }
+
+        function toggleComplete(index, isCompleted) {
+          state[index].completed = isCompleted;
+          const card = document.querySelector(`.day-card[data-index='${index}']`);
+          if (isCompleted) {
+            card.classList.add('completed');
+          } else {
+            card.classList.remove('completed');
+          }
+          saveState();
+          updateProgress();
+        }
+
+        function updateProgress() {
+          const completedCount = state.filter((s) => s.completed).length;
+          const totalCount = state.length;
+          const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+          document.getElementById('progress-bar').style.width = `${percentage}%`;
+          document.getElementById(
+            'progress-text'
+          ).textContent = `${percentage}% Complete (${completedCount}/${totalCount})`;
+        }
+
+        function openModal(index) {
+          const item = roadmapData[index];
+          document.getElementById('modal-title').textContent = item.title;
+          document.getElementById('modal-category').textContent = `Day ${item.day} • ${item.category}`;
+          document.getElementById('modal-description').textContent = item.description;
+
+          const resourcesList = document.getElementById('modal-resources');
+          resourcesList.innerHTML = '';
+          item.resources.forEach((res) => {
+            const li = document.createElement('li');
+            li.className = 'mb-3';
+            li.innerHTML = `
+                        <a href="${res.link}" target="_blank" rel="noopener noreferrer" class="flex items-center p-3 bg-stone-100 hover:bg-teal-50 rounded-md transition-colors group">
+                            <span class="font-semibold text-teal-700 w-24 flex-shrink-0">${res.type}:</span>
+                            <span class="text-stone-700 group-hover:text-teal-800">${res.text}</span>
+                            <span class="ml-auto text-teal-500 group-hover:translate-x-1 transition-transform">&#8594;</span>
+                        </a>
+                    `;
+            resourcesList.appendChild(li);
+          });
+
+          modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+          modal.style.display = 'none';
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeModal();
+          }
+        });
+
+        navLinks.forEach((link) => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector(link.getAttribute('href')).scrollIntoView({
+              behavior: 'smooth',
+            });
+          });
+        });
+
+        function renderChart() {
+          const ctx = document.getElementById('overviewChart').getContext('2d');
+          const categoryCounts = roadmapData.reduce((acc, item) => {
+            acc[item.category] = (acc[item.category] || 0) + 1;
+            return acc;
+          }, {});
+
+          const labels = Object.keys(categoryCounts);
+          const data = Object.values(categoryCounts);
+
+          new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Days per Topic',
+                  data: data,
+                  backgroundColor: [
+                    '#14b8a6', // teal-500
+                    '#f97316', // orange-500
+                    '#0ea5e9', // sky-500
+                    '#8b5cf6', // violet-500
+                    '#ec4899', // pink-500
+                  ],
+                  borderColor: '#f5f5f4', // stone-100
+                  borderWidth: 4,
+                  hoverOffset: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    font: {
+                      size: 14,
+                      family: 'Inter',
+                    },
+                    padding: 20,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      let label = context.label || '';
+                      if (label) {
+                        label += ': ';
+                      }
+                      if (context.parsed !== null) {
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        label += `${value} days (${percentage}%)`;
+                      }
+                      return label;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        initializeState();
+        renderRoadmap();
+      });
+    </script>
+  </body>
+</html>
